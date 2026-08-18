@@ -1,7 +1,13 @@
 # ==============================================================================
-# ModerNutrition Backend — Render Blueprint Specification
-# Provisions Laravel Web API + Managed Database + Queue Worker
+# ModerNutrition Backend — Render Blueprint Specification (Fixed)
 # ==============================================================================
+
+databases:
+  - name: modernutrition-db
+    databaseName: modernutrition
+    user: modernutrition_user
+    region: oregon
+    plan: free
 
 services:
   # 1. Main Laravel API Web Service
@@ -23,17 +29,27 @@ services:
       - key: APP_URL
         sync: false
       - key: DB_CONNECTION
-        value: mysql
+        value: pgsql
       - key: DB_HOST
-        sync: false
+        fromDatabase:
+          name: modernutrition-db
+          property: host
       - key: DB_PORT
-        value: 3306
+        fromDatabase:
+          name: modernutrition-db
+          property: port
       - key: DB_DATABASE
-        sync: false
+        fromDatabase:
+          name: modernutrition-db
+          property: database
       - key: DB_USERNAME
-        sync: false
+        fromDatabase:
+          name: modernutrition-db
+          property: user
       - key: DB_PASSWORD
-        sync: false
+        fromDatabase:
+          name: modernutrition-db
+          property: password
       - key: QUEUE_CONNECTION
         value: database
       - key: SESSION_DRIVER
@@ -41,7 +57,7 @@ services:
       - key: CACHE_STORE
         value: database
 
-  # 2. Background Queue Worker (Optional: for asynchronous ledger jobs)
+  # 2. Background Queue Worker (Processes asynchronous CV allocation ledger jobs)
   - type: worker
     name: modernutrition-worker
     runtime: docker
@@ -51,23 +67,40 @@ services:
     dockerfilePath: ./Dockerfile
     dockerCommand: php artisan queue:work --tries=3 --timeout=90
     envVars:
-      - fromService:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        fromService:
           type: web
           name: modernutrition-api
           envVarKey: APP_KEY
-      - fromService:
-          type: web
-          name: modernutrition-api
-          envVarKey: DB_HOST
-      - fromService:
-          type: web
-          name: modernutrition-api
-          envVarKey: DB_DATABASE
-      - fromService:
-          type: web
-          name: modernutrition-api
-          envVarKey: DB_USERNAME
-      - fromService:
-          type: web
-          name: modernutrition-api
-          envVarKey: DB_PASSWORD
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: modernutrition-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: modernutrition-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: modernutrition-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: modernutrition-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: modernutrition-db
+          property: password
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
