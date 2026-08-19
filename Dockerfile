@@ -15,11 +15,12 @@ RUN apk add --no-cache \
     libjpeg-turbo-dev \
     freetype-dev \
     libzip-dev \
+    icu-dev \
     oniguruma-dev \
     mysql-client \
     postgresql-dev
 
-# Install PHP extensions
+# Install PHP extensions (including pcntl, intl, bcmath, gd, pdo_pgsql, pdo_mysql)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo_mysql \
@@ -27,6 +28,8 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         mbstring \
         zip \
         bcmath \
+        pcntl \
+        intl \
         opcache \
         gd
 
@@ -45,8 +48,8 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Install PHP dependencies with platform check bypass for robust cloud building
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
 
 # Configure Nginx
 COPY nginx.conf /etc/nginx/http.d/default.conf
