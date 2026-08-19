@@ -48,16 +48,23 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
-# Install PHP dependencies with platform check bypass for robust cloud building
-RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
+# Ensure storage directories exist
+RUN mkdir -p storage/framework/cache/data \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache
+
+# Install PHP dependencies without script execution at build time
+RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs --no-scripts
 
 # Configure Nginx
 COPY nginx.conf /etc/nginx/http.d/default.conf
 
-# Set directory permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod +x /var/www/html/docker-entrypoint.sh
+# Set permissions
+RUN chmod +x artisan docker-entrypoint.sh \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Expose HTTP port
 EXPOSE 80
