@@ -27,8 +27,12 @@ return [
         'http://127.0.0.1:3000',
         'http://localhost:3001',
         'http://127.0.0.1:3001',
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'http://localhost:5174',
+        'http://127.0.0.1:5174',
 
-        // Production subdomains and domains (DRC Top-Level Domain)
+        // Production subdomains (DRC Top-Level Domain)
         'https://modernutrition.cd',
         'https://www.modernutrition.cd',
         'https://app.modernutrition.cd',
@@ -36,7 +40,16 @@ return [
     ],
 
     'allowed_origins_patterns' => [
+        // Production custom domains
         '#^https?://([a-zA-Z0-9-]+\.)?modernutrition\.cd(:\d+)?$#',
+
+        // Deployed frontend hosting platforms
+        '#^https://[a-zA-Z0-9-]+\.netlify\.app$#',
+        '#^https://[a-zA-Z0-9-]+\.vercel\.app$#',
+        '#^https://[a-zA-Z0-9-]+\.up\.railway\.app$#',
+        '#^https://[a-zA-Z0-9-]+\.onrender\.com$#',
+
+        // Local development
         '#^https?://localhost(:\d+)?$#',
         '#^https?://127\.0\.0\.1(:\d+)?$#',
     ],
