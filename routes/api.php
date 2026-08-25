@@ -28,7 +28,11 @@ Route::prefix('public')->group(function () {
     Route::get('/products/{sku}', [PublicProductController::class, 'show']);
     Route::get('/migrate', function () {
         try {
-            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            if (request()->has('fresh')) {
+                \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true]);
+            } else {
+                \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            }
             $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
 
             \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);

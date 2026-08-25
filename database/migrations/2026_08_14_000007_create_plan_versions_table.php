@@ -22,7 +22,7 @@ return new class extends Migration
             $table->date('effective_to')->nullable();
 
             // Approval audit chain
-            $table->foreignId('created_by')->constrained('members')->restrictOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('members')->nullOnDelete();
             $table->foreignId('approved_by')->nullable()->constrained('members')->nullOnDelete();
             $table->timestamp('approved_at')->nullable();
             $table->foreignId('activated_by')->nullable()->constrained('members')->nullOnDelete();
