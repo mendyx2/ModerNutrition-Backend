@@ -24,11 +24,11 @@ class AuthController extends Controller
             'first_name'         => 'required|string|max:100',
             'last_name'          => 'required|string|max:100',
             'email'              => 'required|email|unique:members,email',
-            'password'           => 'required|string|min:8|confirmed',
+            'password'           => 'required|string|min:6|confirmed',
             'phone'              => 'nullable|string|max:30',
             'country'            => 'required|string|size:3', // ISO alpha-3 e.g. COD
             'currency'           => 'required|string|size:3', // ISO 4217 e.g. USD, CDF
-            'sponsor_code'       => 'nullable|string|exists:members,member_number',
+            'sponsor_code'       => 'nullable|string|max:50',
             'placement_leg'      => 'nullable|in:left,right',
         ]);
 
