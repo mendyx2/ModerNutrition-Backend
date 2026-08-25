@@ -26,8 +26,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\LaravelPermission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
 
-        // Throttle API requests globally
-        $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Always return JSON for API exceptions with CORS header compatibility
