@@ -4,7 +4,7 @@ use Illuminate\Support\Str;
 
 return [
 
-    'default' => env('SESSION_DRIVER', 'database'),
+    'default' => env('SESSION_DRIVER', 'file'),
 
     'lifetime' => env('SESSION_LIFETIME', 120),
 
