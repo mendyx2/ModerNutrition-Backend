@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Rank;
 use Illuminate\Database\Seeder;
-use Spatie\LaravelPermission\Models\Permission;
-use Spatie\LaravelPermission\Models\Role;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -97,7 +97,7 @@ class RolesAndPermissionsSeeder extends Seeder
     public function run(): void
     {
         // Reset cached roles and permissions
-        app()[\Spatie\LaravelPermission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Create all permissions
         foreach ($this->permissions as $permission) {
