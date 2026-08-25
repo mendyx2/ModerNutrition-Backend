@@ -136,9 +136,8 @@ class DefaultPlanVersionSeeder extends Seeder
 
     public function run(): void
     {
-        // Use the first Global Administration member as the creator, or ID 1 as fallback
-        $systemAdmin = Member::role('Global Administration')->first();
-        $creatorId = $systemAdmin?->id ?? 1;
+        $systemAdmin = Member::role('Global Administration')->first() ?? Member::first();
+        $creatorId = $systemAdmin?->id;
 
         $plan = PlanVersion::firstOrCreate(
             ['name' => 'DRC Default Commerce Plan v1', 'country' => 'COD'],
