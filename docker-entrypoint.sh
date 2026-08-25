@@ -3,6 +3,10 @@ set -e
 
 echo "==> Starting ModerNutrition Laravel Backend..."
 
+# Ensure write permissions on storage & bootstrap/cache
+mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
+chmod -R 777 storage bootstrap/cache || true
+
 PORT="${PORT:-80}"
 echo "==> Configuring Nginx on port ${PORT}..."
 sed -i "s/listen 80;/listen ${PORT};/g" /etc/nginx/http.d/default.conf || true
