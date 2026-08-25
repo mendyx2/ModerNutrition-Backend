@@ -26,6 +26,27 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('public')->group(function () {
     Route::get('/products', [PublicProductController::class, 'index']);
     Route::get('/products/{sku}', [PublicProductController::class, 'show']);
+    Route::get('/migrate', function () {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
+
+            \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+            $seedOutput = \Illuminate\Support\Facades\Artisan::output();
+
+            return response()->json([
+                'message' => 'Database migrations and seeders executed successfully.',
+                'migrate_output' => $migrateOutput,
+                'seed_output' => $seedOutput,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Migration failed: ' . $e->getMessage(),
+                'file' => basename($e->getFile()),
+                'line' => $e->getLine(),
+            ], 500);
+        }
+    });
 });
 
 /*
