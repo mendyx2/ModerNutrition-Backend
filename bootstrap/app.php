@@ -29,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Always return JSON for API exceptions
+        // Always return JSON for API exceptions with CORS header compatibility
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json(['message' => 'Resource not found.'], 404);
@@ -39,6 +39,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (MethodNotAllowedHttpException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json(['message' => 'Method not allowed.'], 405);
+            }
+        });
+
+        $exceptions->render(function (\Throwable $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message'   => $e->getMessage() ?: 'Server Error',
+                    'exception' => get_class($e),
+                    'file'      => basename($e->getFile()),
+                    'line'      => $e->getLine(),
+                ], 500);
             }
         });
     })->create();
