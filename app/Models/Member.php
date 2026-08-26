@@ -56,6 +56,19 @@ class Member extends Authenticatable
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     */
+    protected $appends = [
+        'full_name',
+    ];
+
+    public function getFullNameAttribute(): string
+    {
+        $name = trim("{$this->first_name} {$this->last_name}");
+        return !empty($name) ? $name : ($this->email ?? 'Member');
+    }
+
+    /**
      * The attributes that should be cast.
      */
     protected function casts(): array
