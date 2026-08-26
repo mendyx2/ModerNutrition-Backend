@@ -61,21 +61,27 @@ class AdminOrderController extends Controller
         $order = Order::findOrFail($id);
 
         $validated = $request->validate([
-            'status' => 'required|in:pending,paid,processing,shipped,delivered,cancelled,refunded',
-            'notes'  => 'nullable|string|max:500',
+            'status'          => 'required|in:pending,paid,processing,shipped,delivered,cancelled,refunded',
+            'notes'           => 'nullable|string|max:500',
+            'tracking_number' => 'nullable|string|max:100',
         ]);
 
         $oldStatus = $order->status;
         $newStatus = $validated['status'];
 
         $updates = [
-            'status'       => $newStatus,
-            'processed_by' => $admin->id,
-            'notes'        => $validated['notes'] ?? $order->notes,
+            'status'          => $newStatus,
+            'processed_by'    => $admin->id,
+            'notes'           => $validated['notes'] ?? $order->notes,
+            'tracking_number' => $validated['tracking_number'] ?? $order->tracking_number,
         ];
 
         if ($newStatus === 'paid' && !$order->paid_at) {
             $updates['paid_at'] = now();
+        } elseif ($newStatus === 'shipped' && !$order->shipped_at) {
+            $updates['shipped_at'] = now();
+        } elseif ($newStatus === 'delivered' && !$order->delivered_at) {
+            $updates['delivered_at'] = now();
         }
 
         $order->update($updates);
