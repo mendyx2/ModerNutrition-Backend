@@ -62,12 +62,6 @@ class Member extends Authenticatable
         'full_name',
     ];
 
-    public function getFullNameAttribute(): string
-    {
-        $name = trim("{$this->first_name} {$this->last_name}");
-        return !empty($name) ? $name : ($this->email ?? 'Member');
-    }
-
     /**
      * The attributes that should be cast.
      */
@@ -137,7 +131,8 @@ class Member extends Authenticatable
 
     public function getFullNameAttribute(): string
     {
-        return "{$this->first_name} {$this->last_name}";
+        $name = trim("{$this->first_name} {$this->last_name}");
+        return !empty($name) ? $name : ($this->email ?? 'Member');
     }
 
     public function isActive(): bool
