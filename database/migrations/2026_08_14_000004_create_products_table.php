@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('category');
-            $table->string('image_path')->nullable();
+            $table->longText('image_path')->nullable();
 
             // Financials — stored per-unit
             $table->string('currency', 3)->comment('ISO 4217 base currency');

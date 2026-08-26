@@ -55,7 +55,7 @@ class AdminProductController extends Controller
             'cv'                  => 'required|numeric|min:0',
             'available_countries' => 'nullable|array',
             'status'              => 'required|in:active,inactive,discontinued',
-            'image_path'          => 'nullable|string|max:255',
+            'image_path'          => 'nullable|string',
         ]);
 
         $product = Product::create($validated);
@@ -99,7 +99,7 @@ class AdminProductController extends Controller
             'cv'                  => 'sometimes|numeric|min:0',
             'available_countries' => 'nullable|array',
             'status'              => 'sometimes|in:active,inactive,discontinued',
-            'image_path'          => 'nullable|string|max:255',
+            'image_path'          => 'nullable|string',
         ]);
 
         $oldValues = $product->only(array_keys($validated));
