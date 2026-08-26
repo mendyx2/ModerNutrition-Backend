@@ -139,15 +139,17 @@ class DefaultPlanVersionSeeder extends Seeder
         $systemAdmin = Member::role('Global Administration')->first() ?? Member::first();
         $creatorId = $systemAdmin?->id;
 
-        $plan = PlanVersion::firstOrCreate(
+        $plan = PlanVersion::updateOrCreate(
             ['name' => 'DRC Default Commerce Plan v1', 'country' => 'COD'],
             [
                 'description'              => 'Default Commerce Pool allocation plan for the Democratic Republic of Congo. '
-                    . 'Seeded from product specification. Must be approved before activation.',
-                'status'                   => 'draft',
-                'effective_from'           => now()->startOfMonth(),
+                    . 'Seeded from product specification.',
+                'status'                   => 'active',
+                'effective_from'           => now()->startOfYear(),
                 'required_allocation_total' => 100.0000,
                 'created_by'               => $creatorId,
+                'approved_by'              => $creatorId,
+                'approved_at'              => now(),
             ]
         );
 

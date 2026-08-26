@@ -119,8 +119,12 @@ class MemberOrderController extends Controller
 
             // If order is paid, trigger 10-tier CV allocation engine
             if ($order->status === 'paid') {
-                $this->allocationEngine->allocate($order);
-                $order->update(['cv_allocated_at' => now()]);
+                try {
+                    $this->allocationEngine->allocate($order);
+                    $order->update(['cv_allocated_at' => now()]);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error("CV allocation warning for Order {$order->order_number}: " . $e->getMessage());
+                }
             }
 
             return response()->json([
