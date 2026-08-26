@@ -173,13 +173,16 @@ class MemberDashboardController extends Controller
     {
         $member = $request->user();
         $validated = $request->validate([
-            'phone'   => 'nullable|string|max:30',
-            'city'    => 'nullable|string|max:100',
-            'address' => 'nullable|string|max:255',
-            'bio'     => 'nullable|string|max:500',
+            'phone'         => 'nullable|string|max:30',
+            'city'          => 'nullable|string|max:100',
+            'address'       => 'nullable|string|max:255',
+            'national_id'   => 'nullable|string|max:50',
+            'date_of_birth' => 'nullable|date',
+            'bio'           => 'nullable|string|max:500',
         ]);
 
-        $oldValues = $member->only(['phone', 'city', 'address', 'bio']);
+        $fields = ['phone', 'city', 'address', 'national_id', 'date_of_birth', 'bio'];
+        $oldValues = $member->only($fields);
         $member->update($validated);
 
         AuditLog::record(
@@ -187,11 +190,11 @@ class MemberDashboardController extends Controller
             actor: $member,
             subject: $member,
             oldValues: $oldValues,
-            newValues: $member->only(['phone', 'city', 'address', 'bio']),
-            description: "Member {$member->email} updated profile"
+            newValues: $member->only($fields),
+            description: "Member {$member->email} updated profile & KYC details"
         );
 
-        return response()->json(['message' => 'Profile updated successfully.', 'member' => $member]);
+        return response()->json(['message' => 'Profile and KYC details updated successfully.', 'member' => $member]);
     }
 
     protected function getLedgerSumByBucket(int $memberId, string $walletBucket, Carbon $since): float
