@@ -89,9 +89,15 @@ class AdminOrderController extends Controller
             description: "Admin {$admin->email} updated Order #{$order->order_number} status from {$oldStatus} to {$newStatus}"
         );
 
-        // TRIGGER QUEUED CV ALLOCATION ENGINE ON PAID TRANSITION
+        // TRIGGER CV ALLOCATION ENGINE ON PAID TRANSITION
         if ($newStatus === 'paid' && !$order->hasCvAllocated()) {
-            ProcessOrderCvAllocationJob::dispatch($order);
+            try {
+                app(\App\Commerce\Services\CommerceAllocationEngine::class)->allocate($order);
+                $order->update(['cv_allocated_at' => now()]);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Immediate CV allocation note for Order #{$order->order_number}: " . $e->getMessage());
+                \App\Jobs\ProcessOrderCvAllocationJob::dispatch($order);
+            }
         }
 
         return response()->json([

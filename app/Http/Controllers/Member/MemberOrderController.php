@@ -85,7 +85,7 @@ class MemberOrderController extends Controller
 
             $orderNumber = 'ORD-' . strtoupper(Str::random(8));
 
-            $isAutoPay = !empty($validated['auto_pay']) || true; // Default true for seamless test flow
+            $isAutoPay = !empty($validated['auto_pay']) && $validated['auto_pay'] === true;
 
             $order = Order::create([
                 'order_number'       => $orderNumber,
