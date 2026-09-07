@@ -5,11 +5,10 @@ namespace App\Notifications;
 use App\Models\Withdrawal;
 use App\Services\Notification\Channels\SmsWhatsAppChannel;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class WithdrawalStatusUpdatedNotification extends Notification implements ShouldQueue
+class WithdrawalStatusUpdatedNotification extends Notification
 {
     use Queueable;
 

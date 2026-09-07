@@ -5,11 +5,10 @@ namespace App\Notifications;
 use App\Models\Member;
 use App\Services\Notification\Channels\SmsWhatsAppChannel;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class KycStatusUpdatedNotification extends Notification implements ShouldQueue
+class KycStatusUpdatedNotification extends Notification
 {
     use Queueable;
 
