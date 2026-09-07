@@ -127,18 +127,20 @@ class MemberOrderController extends Controller
                 }
             }
 
-            // Dispatch order confirmation notification
-            try {
-                $member->notify(new \App\Notifications\OrderStatusUpdatedNotification($order, $order->status));
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("Order placement notification error for Order #{$order->order_number}: " . $e->getMessage());
-            }
-
-            return response()->json([
-                'message' => 'Order created and processed successfully.',
-                'order'   => $order->load('items'),
-            ], 201);
+            return $order;
         });
+
+        // Dispatch order confirmation notification after transaction commit
+        try {
+            $member->notify(new \App\Notifications\OrderStatusUpdatedNotification($order, $order->status));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Order placement notification error for Order #{$order->order_number}: " . $e->getMessage());
+        }
+
+        return response()->json([
+            'message' => 'Order created and processed successfully.',
+            'order'   => $order->load('items'),
+        ], 201);
     }
 
     /**

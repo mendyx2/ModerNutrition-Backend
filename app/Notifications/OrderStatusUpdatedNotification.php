@@ -74,6 +74,14 @@ class OrderStatusUpdatedNotification extends Notification implements ShouldQueue
     }
 
     /**
+     * Get the array representation of the notification.
+     */
+    public function toArray(mixed $notifiable): array
+    {
+        return $this->toDatabase($notifiable);
+    }
+
+    /**
      * Get the SMS representation of the notification.
      */
     public function toSms(mixed $notifiable): string
