@@ -95,14 +95,30 @@ class AdminOrderController extends Controller
             description: "Admin {$admin->email} updated Order #{$order->order_number} status from {$oldStatus} to {$newStatus}"
         );
 
-        // TRIGGER CV ALLOCATION ENGINE ON PAID TRANSITION
-        if ($newStatus === 'paid' && !$order->hasCvAllocated()) {
-            try {
-                app(\App\Commerce\Services\CommerceAllocationEngine::class)->allocate($order);
-                $order->update(['cv_allocated_at' => now()]);
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("Immediate CV allocation note for Order #{$order->order_number}: " . $e->getMessage());
-                \App\Jobs\ProcessOrderCvAllocationJob::dispatch($order);
+        // TRIGGER CV ALLOCATION ENGINE & INVALIDATE UPLINE CACHES ON PAID TRANSITION
+        if ($newStatus === 'paid') {
+            // Invalidate purchaser and ancestor binary tree cache
+            if ($order->member) {
+                \Illuminate\Support\Facades\Cache::forget("member_binary_summary_{$order->member->id}");
+                if (!empty($order->member->tree_path)) {
+                    $ancestorIds = array_filter(explode('/', trim($order->member->tree_path, '/')));
+                    foreach ($ancestorIds as $ancestorId) {
+                        \Illuminate\Support\Facades\Cache::forget("member_binary_summary_{$ancestorId}");
+                    }
+                }
+                if ($order->member->sponsor_id) {
+                    \Illuminate\Support\Facades\Cache::forget("member_binary_summary_{$order->member->sponsor_id}");
+                }
+            }
+
+            if (!$order->hasCvAllocated()) {
+                try {
+                    app(\App\Commerce\Services\CommerceAllocationEngine::class)->allocate($order);
+                    $order->update(['cv_allocated_at' => now()]);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("Immediate CV allocation note for Order #{$order->order_number}: " . $e->getMessage());
+                    \App\Jobs\ProcessOrderCvAllocationJob::dispatch($order);
+                }
             }
         }
 

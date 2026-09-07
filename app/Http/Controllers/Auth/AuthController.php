@@ -60,6 +60,11 @@ class AuthController extends Controller
         // Default to Consumer rank (level 1)
         $defaultRank = Rank::where('level', 1)->first();
 
+        // Calculate tree depth and parent path prefix
+        $parent = $parentId ? Member::find($parentId) : null;
+        $parentPath = $parent?->tree_path ?: ($parentId ? "/{$parentId}/" : "/");
+        $treeDepth = $parent ? ($parent->tree_depth + 1) : 0;
+
         $member = Member::create([
             'member_number'      => Member::generateMemberNumber(),
             'first_name'         => $validated['first_name'],
@@ -72,9 +77,25 @@ class AuthController extends Controller
             'sponsor_id'         => $sponsor?->id,
             'parent_id'          => $parentId,
             'leg'                => $placementLeg,
+            'tree_depth'         => $treeDepth,
             'current_rank_id'    => $defaultRank?->id,
             'status'             => 'active', // Active immediately for consumer purchases
         ]);
+
+        // Complete materialized path with member's own ID
+        $member->tree_path = $parentPath . "{$member->id}/";
+        $member->save();
+
+        // Invalidate upline binary tree cache for all ancestors
+        if (!empty($member->tree_path)) {
+            $ancestorIds = array_filter(explode('/', trim($member->tree_path, '/')));
+            foreach ($ancestorIds as $ancestorId) {
+                \Illuminate\Support\Facades\Cache::forget("member_binary_summary_{$ancestorId}");
+            }
+        }
+        if ($sponsor) {
+            \Illuminate\Support\Facades\Cache::forget("member_binary_summary_{$sponsor->id}");
+        }
 
         // Assign default Consumer role
         $member->assignRole('Consumer');

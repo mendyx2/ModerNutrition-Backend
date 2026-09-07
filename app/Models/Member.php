@@ -38,6 +38,8 @@ class Member extends Authenticatable
         'sponsor_id',
         'parent_id',
         'leg',
+        'tree_path',
+        'tree_depth',
         'current_rank_id',
         'status',
         'kyc_status',
