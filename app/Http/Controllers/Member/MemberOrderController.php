@@ -37,7 +37,7 @@ class MemberOrderController extends Controller
 
         $member = $request->user();
 
-        return DB::transaction(function () use ($validated, $member) {
+        $order = DB::transaction(function () use ($validated, $member) {
             $subtotalCents = 0;
             $totalPv = 0.0;
             $totalCv = 0.0;
