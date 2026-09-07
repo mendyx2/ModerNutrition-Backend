@@ -110,6 +110,15 @@ class AdminWithdrawalController extends Controller
             );
         });
 
+        // Dispatch approval notification to member
+        if ($withdrawal->member) {
+            try {
+                $withdrawal->member->notify(new \App\Notifications\WithdrawalStatusUpdatedNotification($withdrawal, 'approved'));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Withdrawal approval notification error for #{$withdrawal->withdrawal_number}: " . $e->getMessage());
+            }
+        }
+
         return response()->json([
             'message'    => 'Withdrawal approved and processed.',
             'withdrawal' => $withdrawal->fresh(['member', 'approver']),
@@ -163,9 +172,18 @@ class AdminWithdrawalController extends Controller
             );
         });
 
+        // Dispatch rejection notification to member
+        if ($withdrawal->member) {
+            try {
+                $withdrawal->member->notify(new \App\Notifications\WithdrawalStatusUpdatedNotification($withdrawal, 'rejected', $validated['reason']));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Withdrawal rejection notification error for #{$withdrawal->withdrawal_number}: " . $e->getMessage());
+            }
+        }
+
         return response()->json([
-            'message'    => 'Withdrawal request rejected. Funds returned to member wallet.',
-            'withdrawal' => $withdrawal->fresh(['member']),
+            'message'    => 'Withdrawal request rejected and funds restored.',
+            'withdrawal' => $withdrawal->fresh(['member', 'approver']),
         ]);
     }
 }

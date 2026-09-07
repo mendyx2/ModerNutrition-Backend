@@ -122,6 +122,15 @@ class AdminOrderController extends Controller
             }
         }
 
+        // Dispatch queued notification to purchasing member
+        if ($order->member) {
+            try {
+                $order->member->notify(new \App\Notifications\OrderStatusUpdatedNotification($order, $newStatus));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Order notification dispatch error for Order #{$order->order_number}: " . $e->getMessage());
+            }
+        }
+
         return response()->json([
             'message' => "Order status updated to '{$newStatus}'.",
             'order'   => $order->fresh(['items', 'member']),

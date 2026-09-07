@@ -119,6 +119,12 @@ class AdminMemberController extends Controller
             description: "Admin {$admin->email} verified KYC documents and activated member #{$member->member_number}"
         );
 
+        try {
+            $member->notify(new \App\Notifications\KycStatusUpdatedNotification($member, 'verified'));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("KYC approval notification error for #{$member->member_number}: " . $e->getMessage());
+        }
+
         return response()->json(['message' => 'Member KYC successfully verified and account activated.', 'member' => $member]);
     }
 
@@ -155,6 +161,12 @@ class AdminMemberController extends Controller
             ],
             description: "Admin {$admin->email} rejected KYC for member #{$member->member_number}: {$validated['reason']}"
         );
+
+        try {
+            $member->notify(new \App\Notifications\KycStatusUpdatedNotification($member, 'rejected', $validated['reason']));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("KYC rejection notification error for #{$member->member_number}: " . $e->getMessage());
+        }
 
         return response()->json(['message' => 'Member KYC rejected.', 'member' => $member]);
     }

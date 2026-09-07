@@ -103,6 +103,16 @@ class AuthController extends Controller
         // Create Sanctum API token
         $token = $member->createToken('auth-token')->plainTextToken;
 
+        // Dispatch queued welcome notification
+        try {
+            $member->notify(new \App\Notifications\WelcomeMemberNotification($member));
+            if ($sponsor) {
+                $sponsor->notify(new \App\Notifications\NewDownlineSponsoredNotification($member, $sponsor, $placementLeg));
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Notification dispatch failed for member #{$member->member_number}: " . $e->getMessage());
+        }
+
         AuditLog::record(
             event: 'auth.registered',
             actor: $member,

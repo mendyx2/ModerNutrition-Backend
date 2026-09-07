@@ -167,8 +167,15 @@ class MemberWalletController extends Controller
             return $wd;
         });
 
+        // Dispatch submission confirmation notification
+        try {
+            $member->notify(new \App\Notifications\WithdrawalStatusUpdatedNotification($withdrawal, 'pending'));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Withdrawal request notification error for #{$withdrawal->withdrawal_number}: " . $e->getMessage());
+        }
+
         return response()->json([
-            'message'    => 'Withdrawal request submitted for review.',
+            'message'    => 'Withdrawal request submitted successfully. Pending administrative compliance review.',
             'withdrawal' => $withdrawal,
         ], 201);
     }

@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AdminWalletController;
 use App\Http\Controllers\Admin\AdminWithdrawalController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Member\NotificationController;
 use App\Http\Controllers\Member\MemberDashboardController;
 use App\Http\Controllers\Member\MemberOrderController;
 use App\Http\Controllers\Member\MemberTeamController;
@@ -80,6 +81,11 @@ Route::middleware(['auth:sanctum', 'role:Consumer|Distributor|Leader|Country Ope
     Route::get('/rank-progress', [MemberDashboardController::class, 'rankProgress']);
     Route::get('/profile', [MemberDashboardController::class, 'profile']);
     Route::put('/profile', [MemberDashboardController::class, 'updateProfile']);
+
+    // Notifications (In-App Database Alerts)
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
     // Orders & Guest Cart Conversion
     Route::get('/orders', [MemberOrderController::class, 'index']);
