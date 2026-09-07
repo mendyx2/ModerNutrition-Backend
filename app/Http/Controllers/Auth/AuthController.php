@@ -32,10 +32,29 @@ class AuthController extends Controller
             'placement_leg'      => 'nullable|in:left,right',
         ]);
 
-        // Resolve sponsor if referral code provided
+        // Resolve sponsor and binary tree placement position
         $sponsor = null;
+        $parentId = null;
+        $placementLeg = null;
+
         if (!empty($validated['sponsor_code'])) {
             $sponsor = Member::where('member_number', $validated['sponsor_code'])->first();
+            if ($sponsor) {
+                $placementLeg = $validated['placement_leg'] ?? 'left';
+                $curr = $sponsor;
+
+                // Traverse down designated outside leg to find first available leaf slot
+                while (true) {
+                    $child = Member::where('parent_id', $curr->id)
+                        ->where('leg', $placementLeg)
+                        ->first();
+                    if (!$child) {
+                        $parentId = $curr->id;
+                        break;
+                    }
+                    $curr = $child;
+                }
+            }
         }
 
         // Default to Consumer rank (level 1)
@@ -51,8 +70,8 @@ class AuthController extends Controller
             'country'            => strtoupper($validated['country']),
             'currency'           => strtoupper($validated['currency']),
             'sponsor_id'         => $sponsor?->id,
-            'parent_id'          => $sponsor?->id, // Default binary parent to sponsor if not specified
-            'leg'                => $validated['placement_leg'] ?? 'left',
+            'parent_id'          => $parentId,
+            'leg'                => $placementLeg,
             'current_rank_id'    => $defaultRank?->id,
             'status'             => 'active', // Active immediately for consumer purchases
         ]);
