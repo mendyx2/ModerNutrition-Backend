@@ -109,6 +109,8 @@ Route::middleware(['auth:sanctum', 'role:Country Operations|Global Administratio
     Route::get('/members', [AdminMemberController::class, 'index']);
     Route::get('/members/{id}', [AdminMemberController::class, 'show']);
     Route::post('/members/{id}/approve', [AdminMemberController::class, 'approve']);
+    Route::post('/members/{id}/approve-kyc', [AdminMemberController::class, 'approveKyc']);
+    Route::post('/members/{id}/reject-kyc', [AdminMemberController::class, 'rejectKyc']);
     Route::post('/members/{id}/suspend', [AdminMemberController::class, 'suspend']);
     Route::post('/members/{id}/rank-override', [AdminMemberController::class, 'rankOverride'])->middleware('role:Global Administration');
 

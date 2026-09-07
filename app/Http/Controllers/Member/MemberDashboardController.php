@@ -173,24 +173,37 @@ class MemberDashboardController extends Controller
     {
         $member = $request->user();
         $validated = $request->validate([
-            'phone'         => 'nullable|string|max:30',
-            'city'          => 'nullable|string|max:100',
-            'address'       => 'nullable|string|max:255',
-            'national_id'   => 'nullable|string|max:50',
-            'date_of_birth' => 'nullable|date',
-            'bio'           => 'nullable|string|max:500',
+            'phone'              => 'nullable|string|max:30',
+            'city'               => 'nullable|string|max:100',
+            'address'            => 'nullable|string|max:255',
+            'national_id'        => 'nullable|string|max:50',
+            'date_of_birth'      => 'nullable|date',
+            'bio'                => 'nullable|string|max:500',
+            'kyc_document_type'  => 'nullable|string|max:50',
+            'kyc_document_path'  => 'nullable|string',
         ]);
 
-        $fields = ['phone', 'city', 'address', 'national_id', 'date_of_birth', 'bio'];
-        $oldValues = $member->only($fields);
-        $member->update($validated);
+        $fields = ['phone', 'city', 'address', 'national_id', 'date_of_birth', 'bio', 'kyc_document_type', 'kyc_document_path'];
+        $oldValues = $member->only(array_merge($fields, ['kyc_status']));
+
+        $updateData = $validated;
+
+        // If national_id or document is submitted and user isn't already verified, set kyc_status to pending
+        if (!empty($validated['national_id']) || !empty($validated['kyc_document_path'])) {
+            if ($member->kyc_status !== 'verified') {
+                $updateData['kyc_status'] = 'pending';
+                $updateData['kyc_rejection_reason'] = null;
+            }
+        }
+
+        $member->update($updateData);
 
         AuditLog::record(
             event: 'member.profile_updated',
             actor: $member,
             subject: $member,
             oldValues: $oldValues,
-            newValues: $member->only($fields),
+            newValues: $member->only(array_merge($fields, ['kyc_status'])),
             description: "Member {$member->email} updated profile & KYC details"
         );
 

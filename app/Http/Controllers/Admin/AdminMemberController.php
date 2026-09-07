@@ -24,6 +24,10 @@ class AdminMemberController extends Controller
             $query->where('status', $request->query('status'));
         }
 
+        if ($request->filled('kyc_status')) {
+            $query->where('kyc_status', $request->query('kyc_status'));
+        }
+
         if ($request->filled('country')) {
             $query->where('country', $request->query('country'));
         }
@@ -34,6 +38,7 @@ class AdminMemberController extends Controller
                 $q->where('first_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('national_id', 'like', "%{$search}%")
                   ->orWhere('member_number', 'like', "%{$search}%");
             });
         }
@@ -79,6 +84,79 @@ class AdminMemberController extends Controller
         );
 
         return response()->json(['message' => 'Member account approved.', 'member' => $member]);
+    }
+
+    /**
+     * POST /api/admin/members/{id}/approve-kyc
+     */
+    public function approveKyc(Request $request, int $id): JsonResponse
+    {
+        $admin = $request->user();
+        $member = Member::findOrFail($id);
+
+        $oldValues = [
+            'kyc_status' => $member->kyc_status,
+            'status'     => $member->status,
+        ];
+
+        $member->update([
+            'kyc_status'           => 'verified',
+            'status'               => 'active',
+            'kyc_rejection_reason' => null,
+            'kyc_verified_at'      => now(),
+        ]);
+
+        AuditLog::record(
+            event: 'member.kyc_approved',
+            actor: $admin,
+            subject: $member,
+            oldValues: $oldValues,
+            newValues: [
+                'kyc_status'      => 'verified',
+                'status'          => 'active',
+                'kyc_verified_at' => $member->kyc_verified_at,
+            ],
+            description: "Admin {$admin->email} verified KYC documents and activated member #{$member->member_number}"
+        );
+
+        return response()->json(['message' => 'Member KYC successfully verified and account activated.', 'member' => $member]);
+    }
+
+    /**
+     * POST /api/admin/members/{id}/reject-kyc
+     */
+    public function rejectKyc(Request $request, int $id): JsonResponse
+    {
+        $admin = $request->user();
+        $member = Member::findOrFail($id);
+
+        $validated = $request->validate([
+            'reason' => 'required|string|max:500',
+        ]);
+
+        $oldValues = [
+            'kyc_status'           => $member->kyc_status,
+            'kyc_rejection_reason' => $member->kyc_rejection_reason,
+        ];
+
+        $member->update([
+            'kyc_status'           => 'rejected',
+            'kyc_rejection_reason' => $validated['reason'],
+        ]);
+
+        AuditLog::record(
+            event: 'member.kyc_rejected',
+            actor: $admin,
+            subject: $member,
+            oldValues: $oldValues,
+            newValues: [
+                'kyc_status'           => 'rejected',
+                'kyc_rejection_reason' => $validated['reason'],
+            ],
+            description: "Admin {$admin->email} rejected KYC for member #{$member->member_number}: {$validated['reason']}"
+        );
+
+        return response()->json(['message' => 'Member KYC rejected.', 'member' => $member]);
     }
 
     /**

@@ -40,10 +40,15 @@ class Member extends Authenticatable
         'leg',
         'current_rank_id',
         'status',
+        'kyc_status',
         'avatar_path',
         'bio',
         'date_of_birth',
         'national_id',
+        'kyc_document_type',
+        'kyc_document_path',
+        'kyc_rejection_reason',
+        'kyc_verified_at',
     ];
 
     /**
@@ -52,7 +57,6 @@ class Member extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-        'national_id',
     ];
 
     /**
@@ -69,6 +73,7 @@ class Member extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'kyc_verified_at'   => 'datetime',
             'date_of_birth'     => 'date',
             'password'          => 'hashed',
         ];
