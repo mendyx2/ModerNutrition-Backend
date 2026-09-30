@@ -9,33 +9,33 @@ chmod -R 777 storage bootstrap/cache || true
 
 PORT="${PORT:-80}"
 echo "==> Configuring Nginx on port ${PORT}..."
-sed -i "s/listen 80;/listen ${PORT};/g" /etc/nginx/http.d/default.conf || true
-sed -i "s/listen \[::\]:80;/listen \[::\]:${PORT};/g" /etc/nginx/http.d/default.conf || true
+if [ "$PORT" != "80" ] && [ "$PORT" != "8080" ]; then
+    sed -i "s/listen 80;/listen 80;\n    listen ${PORT};/g" /etc/nginx/http.d/default.conf || true
+    sed -i "s/listen \[::\]:80;/listen \[::\]:80;\n    listen \[::\]:${PORT};/g" /etc/nginx/http.d/default.conf || true
+fi
 
 # Discover packages once vendor is ready
 php artisan package:discover --ansi || true
 
-# Run database migrations with retry loop to ensure tables exist
-echo "==> Running database migrations..."
-n=0
-until [ "$n" -ge 5 ]
-do
-   php artisan migrate --force && break
-   n=$((n+1))
-   echo "Database migration attempt $n failed. Retrying in 3 seconds..."
-   sleep 3
-done
-
-echo "==> Running database seeders..."
-php artisan db:seed --force || echo "Seeder notice: seeders completed or already run."
-
-# Cache configuration and routes for API production performance
-php artisan config:cache || true
-php artisan route:cache || true
-
 # Start PHP-FPM in the background
 echo "==> Starting PHP-FPM..."
 php-fpm -D
+
+# Run database migrations and seeders in background so health check passes instantly
+(
+   echo "==> Running database migrations..."
+   n=0
+   until [ "$n" -ge 10 ]
+   do
+      if php artisan migrate --force; then
+         echo "==> Running database seeders..."
+         php artisan db:seed --force || echo "Seeder notice: completed or skipped."
+         break
+      fi
+      n=$((n+1))
+      sleep 2
+   done
+) &
 
 # Start Nginx in the foreground
 echo "==> Starting Nginx on port ${PORT}..."
