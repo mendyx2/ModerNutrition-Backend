@@ -3,18 +3,17 @@ set -e
 
 echo "==> Starting ModerNutrition Laravel Backend..."
 
-# Ensure write permissions on storage, bootstrap/cache, and resources/views
+# Ensure write permissions on storage & bootstrap/cache
 mkdir -p resources/views storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
 chmod -R 777 storage bootstrap/cache || true
 
-PORT="${PORT:-80}"
-echo "==> Configuring Nginx on port ${PORT}..."
+PORT="${PORT:-8080}"
+echo "==> Configuring Nginx listeners..."
 if [ "$PORT" != "80" ]; then
-    sed -i "s/listen 80;/listen ${PORT};/g" /etc/nginx/http.d/default.conf || true
-    sed -i "s/listen \[::\]:80;/listen \[::\]:${PORT};/g" /etc/nginx/http.d/default.conf || true
+    sed -i "s/listen 80;/listen 80;\n    listen ${PORT};/g" /etc/nginx/http.d/default.conf || true
 fi
 
-# Discover packages once vendor is ready
+# Discover packages
 php artisan package:discover --ansi || true
 
 # Start PHP-FPM in the background
@@ -38,5 +37,5 @@ php-fpm -D
 ) &
 
 # Start Nginx in the foreground
-echo "==> Starting Nginx on port ${PORT}..."
+echo "==> Starting Nginx..."
 nginx -g "daemon off;"
