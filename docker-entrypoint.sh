@@ -9,9 +9,9 @@ chmod -R 777 storage bootstrap/cache || true
 
 PORT="${PORT:-80}"
 echo "==> Configuring Nginx on port ${PORT}..."
-if [ "$PORT" != "80" ] && [ "$PORT" != "8080" ]; then
-    sed -i "s/listen 80;/listen 80;\n    listen ${PORT};/g" /etc/nginx/http.d/default.conf || true
-    sed -i "s/listen \[::\]:80;/listen \[::\]:80;\n    listen \[::\]:${PORT};/g" /etc/nginx/http.d/default.conf || true
+if [ "$PORT" != "80" ]; then
+    sed -i "s/listen 80;/listen ${PORT};/g" /etc/nginx/http.d/default.conf || true
+    sed -i "s/listen \[::\]:80;/listen \[::\]:${PORT};/g" /etc/nginx/http.d/default.conf || true
 fi
 
 # Discover packages once vendor is ready
@@ -21,7 +21,7 @@ php artisan package:discover --ansi || true
 echo "==> Starting PHP-FPM..."
 php-fpm -D
 
-# Run database migrations and seeders in background so health check passes instantly
+# Run database migrations and seeders in background so web service boots immediately
 (
    echo "==> Running database migrations..."
    n=0
