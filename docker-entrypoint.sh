@@ -3,8 +3,8 @@ set -e
 
 echo "==> Starting ModerNutrition Laravel Backend..."
 
-# Ensure write permissions on storage & bootstrap/cache
-mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
+# Ensure write permissions on storage, bootstrap/cache, and resources/views
+mkdir -p resources/views storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
 chmod -R 777 storage bootstrap/cache || true
 
 PORT="${PORT:-80}"
@@ -29,10 +29,9 @@ done
 echo "==> Running database seeders..."
 php artisan db:seed --force || echo "Seeder notice: seeders completed or already run."
 
-# Cache configuration, routes, and views for production performance
+# Cache configuration and routes for API production performance
 php artisan config:cache || true
 php artisan route:cache || true
-php artisan view:cache || true
 
 # Start PHP-FPM in the background
 echo "==> Starting PHP-FPM..."

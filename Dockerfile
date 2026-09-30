@@ -48,12 +48,13 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
-# Ensure storage directories exist
+# Ensure storage and view directories exist
 RUN mkdir -p storage/framework/cache/data \
     storage/framework/sessions \
     storage/framework/views \
     storage/logs \
-    bootstrap/cache
+    bootstrap/cache \
+    resources/views
 
 # Install PHP dependencies without script execution at build time
 RUN composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs --no-scripts
